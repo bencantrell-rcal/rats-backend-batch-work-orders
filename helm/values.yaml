@@ -1,0 +1,32 @@
+image:
+  repository: us-south1-docker.pkg.dev/$PROJECT_ID/rats-backend-batch-work-orders/rats-backend-batch-work-orders
+  tag: latest
+  pullPolicy: Always
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+redeployTimestamp: "{{ now | unixEpoch }}"
+
+cron:
+  schedule: "0 * * * *"
+  concurrencyPolicy: "Forbid" # or Allow / Replace
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  args: [] # optional command args for the job
+
+spring:
+  datasource:
+    read:
+      url: jdbc:mysql://127.0.0.1:3306/rats?useSSL=false&allowPublicKeyRetrieval=true
+      username: devuser
+      password: Rcal_1995!
+    write:
+      url: jdbc:mysql://127.0.0.1:3306/rats?useSSL=false&allowPublicKeyRetrieval=true
+      username: devuser
+      password: Rcal_1995!
