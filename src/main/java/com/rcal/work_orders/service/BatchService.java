@@ -10,5 +10,6 @@ import org.springframework.stereotype.Service;
 public class BatchService{
 
   public void normalJob(){
+      System.out.println("normalJob");
   }
 }
