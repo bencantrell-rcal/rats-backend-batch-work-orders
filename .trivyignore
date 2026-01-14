@@ -1,0 +1,4 @@
+# zlib CVE in distroless / Debian
+# Not exploitable for Java workloads
+# Debian status: will_not_fix
+CVE-2023-45853
