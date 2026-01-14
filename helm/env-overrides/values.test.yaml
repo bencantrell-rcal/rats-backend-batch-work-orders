@@ -11,3 +11,7 @@ spring:
       url: jdbc:mysql://127.0.0.1:3306/rats?useSSL=false&allowPublicKeyRetrieval=true
       username: devuser
       password: Rcal_1995!
+
+cloudsql:
+  enabled: true
+  instanceConnectionName: noble-helper-469522-j1:us-south1:rcal-mysql-dal

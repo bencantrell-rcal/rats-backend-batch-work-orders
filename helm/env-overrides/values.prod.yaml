@@ -11,3 +11,7 @@ spring:
       url: jdbc:mysql://10.10.5.55:6446/rats?useSSL=false&allowPublicKeyRetrieval=true
       username: rat
       password: Rat_2021!
+
+cloudsql:
+  enabled: true
+  instanceConnectionName: noble-helper-469522-j1:us-south1:rcal-mysql-dal-rats
