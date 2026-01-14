@@ -16,6 +16,7 @@ spec:
           annotations:
             redeploy-timestamp: {{ .Values.redeployTimestamp | quote }}
         spec:
+          serviceAccountName: cloudsql-app-ksa
           restartPolicy: OnFailure
           containers:
             - name: {{ .Release.Name }}-cron
@@ -25,3 +26,19 @@ spec:
                 {{- toYaml .Values.resources | nindent 16 }}
               args:
                 {{- toYaml .Values.cron.args | nindent 16 }}
+              envFrom:
+                - configMapRef:
+                    name: {{ .Release.Name }}-config
+
+            {{- if .Values.cloudsql.enabled }}
+            - name: cloud-sql-proxy
+              image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.18.2
+              args:
+                - "--structured-logs"
+                - "--port=3306"
+                - "--address=0.0.0.0"
+                - "--private-ip"
+                - "{{ .Values.cloudsql.instanceConnectionName }}"
+              securityContext:
+                runAsNonRoot: true
+            {{- end }}
