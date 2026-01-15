@@ -25,22 +25,8 @@ spec:
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               resources:
                 {{- toYaml .Values.resources | nindent 16 }}
-              command: ["/bin/sh", "-c"]
               args:
-                - |
-                  # Run your actual command
-                  {{- range .Values.cron.args }}
-                  {{ . }}
-                  {{- end }}
-
-                  # Capture exit code
-                  EXIT_CODE=$?
-
-                  # Kill the proxy
-                  pkill -f cloud-sql-proxy || killall cloud-sql-proxy || true
-
-                  # Exit with the original exit code
-                  exit $EXIT_CODE
+                {{- toYaml .Values.cron.args | nindent 16 }}
               envFrom:
                 - configMapRef:
                     name: {{ .Release.Name }}-config
@@ -56,4 +42,20 @@ spec:
                 - "{{ .Values.cloudsql.instanceConnectionName }}"
               securityContext:
                 runAsNonRoot: true
+
+            - name: proxy-killer
+              image: busybox:latest
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  # Wait for main container to finish
+                  while ps aux | grep -v grep | grep -q "{{ .Release.Name }}-cron"; do
+                    sleep 2
+                  done
+                  # Kill the proxy
+                  killall cloud-sql-proxy
+                  # Exit so this container also terminates
+                  exit 0
+              securityContext:
+                runAsNonRoot: false
             {{- end }}
