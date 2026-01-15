@@ -49,12 +49,17 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  # Wait until we only see our own process and the proxy (main container has finished)
+                  echo "Waiting for main container to complete..."
+                  # Loop until the main container's process is gone
                   while true; do
-                    PROC_COUNT=$(ps aux | grep -v grep | grep -v "proxy-killer" | grep -v "cloud-sql-proxy" | grep -v "pause" | wc -l)
-                    if [ "$PROC_COUNT" -le 1 ]; then
-                      echo "Main container completed"
+                    # Check /proc to see if container processes exist (PIDs will disappear when container exits)
+                    # Look for processes that aren't sh, cloud-sql-proxy, or pause
+                    MAIN_RUNNING=$(ps -ef | grep -v "grep" | grep -v "sh -c" | grep -v "cloud-sql-proxy" | grep -v "/pause" | grep -v "ps -ef" | tail -n +2 | wc -l)
+
+                    if [ "$MAIN_RUNNING" -eq 0 ]; then
+                      echo "Main container has exited, waiting 5 seconds..."
                       sleep 5
+                      echo "Killing cloud-sql-proxy..."
                       pkill -TERM cloud-sql-proxy
                       exit 0
                     fi
