@@ -30,6 +30,9 @@ spec:
               envFrom:
                 - configMapRef:
                     name: {{ .Release.Name }}-config
+              env:
+                - name: MAIN_CONTAINER
+                  value: "true"
 
             {{- if .Values.cloudsql.enabled }}
             - name: cloud-sql-proxy
@@ -50,14 +53,22 @@ spec:
               args:
                 - |
                   echo "Waiting for main container to complete..."
-                  # Loop until the main container's process is gone
+                  # Find the PID of the main container by looking for the env var
                   while true; do
-                    # Check /proc to see if container processes exist (PIDs will disappear when container exits)
-                    # Look for processes that aren't sh, cloud-sql-proxy, or pause
-                    MAIN_RUNNING=$(ps -ef | grep -v "grep" | grep -v "sh -c" | grep -v "cloud-sql-proxy" | grep -v "/pause" | grep -v "ps -ef" | tail -n +2 | wc -l)
+                    MAIN_PID=$(ps aux | grep -v grep | awk '{print $1}' | while read pid; do
+                      if [ -f "/proc/$pid/environ" ] && grep -q "MAIN_CONTAINER=true" "/proc/$pid/environ" 2>/dev/null; then
+                        echo $pid
+                        break
+                      fi
+                    done)
 
-                    if [ "$MAIN_RUNNING" -eq 0 ]; then
-                      echo "Main container has exited, waiting 5 seconds..."
+                    if [ -n "$MAIN_PID" ]; then
+                      echo "Found main container PID: $MAIN_PID, monitoring..."
+                      # Wait for this PID to disappear
+                      while kill -0 $MAIN_PID 2>/dev/null; do
+                        sleep 2
+                      done
+                      echo "Main container exited, waiting 5 seconds..."
                       sleep 5
                       echo "Killing cloud-sql-proxy..."
                       pkill -TERM cloud-sql-proxy
