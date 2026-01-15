@@ -17,7 +17,7 @@ spec:
             redeploy-timestamp: {{ .Values.redeployTimestamp | quote }}
         spec:
           serviceAccountName: cloudsql-app-ksa
-          restartPolicy: Never
+          restartPolicy: OnFailure
           shareProcessNamespace: true
           containers:
             - name: {{ .Release.Name }}-cron
@@ -39,6 +39,7 @@ spec:
                 - "--port=3306"
                 - "--address=0.0.0.0"
                 - "--private-ip"
+                - "--exit-zero-on-sigterm"
                 - "{{ .Values.cloudsql.instanceConnectionName }}"
               securityContext:
                 runAsNonRoot: true
@@ -48,12 +49,10 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  # Wait for main container to finish
                   while ps aux | grep -v grep | grep -q "{{ .Release.Name }}-cron"; do
                     sleep 2
                   done
-                  # Send SIGTERM to proxy for graceful shutdown
-                  killall -TERM cloud-sql-proxy
+                  pkill -TERM cloud-sql-proxy
                   exit 0
               securityContext:
                 runAsNonRoot: false
