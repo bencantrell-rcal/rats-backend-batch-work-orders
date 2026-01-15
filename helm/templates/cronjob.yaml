@@ -49,11 +49,17 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  while ps aux | grep -v grep | grep -q "{{ .Release.Name }}-cron"; do
+                  # Wait until we only see our own process and the proxy (main container has finished)
+                  while true; do
+                    PROC_COUNT=$(ps aux | grep -v grep | grep -v "proxy-killer" | grep -v "cloud-sql-proxy" | grep -v "pause" | wc -l)
+                    if [ "$PROC_COUNT" -le 1 ]; then
+                      echo "Main container completed"
+                      sleep 5
+                      pkill -TERM cloud-sql-proxy
+                      exit 0
+                    fi
                     sleep 2
                   done
-                  pkill -TERM cloud-sql-proxy
-                  exit 0
               securityContext:
                 runAsNonRoot: false
             {{- end }}
