@@ -25,15 +25,25 @@ spec:
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               resources:
                 {{- toYaml .Values.resources | nindent 16 }}
+              command: ["/bin/sh", "-c"]
               args:
-                {{- toYaml .Values.cron.args | nindent 16 }}
+                - |
+                  # Run your actual command
+                  {{- range .Values.cron.args }}
+                  {{ . }}
+                  {{- end }}
+
+                  # Capture exit code
+                  EXIT_CODE=$?
+
+                  # Kill the proxy
+                  pkill -f cloud-sql-proxy || killall cloud-sql-proxy || true
+
+                  # Exit with the original exit code
+                  exit $EXIT_CODE
               envFrom:
                 - configMapRef:
                     name: {{ .Release.Name }}-config
-              lifecycle:
-                preStop:
-                  exec:
-                    command: ["/bin/sh", "-c", "killall cloud-sql-proxy || killall cloud_sql_proxy || true"]
 
             {{- if .Values.cloudsql.enabled }}
             - name: cloud-sql-proxy
