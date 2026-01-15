@@ -18,6 +18,7 @@ spec:
         spec:
           serviceAccountName: cloudsql-app-ksa
           restartPolicy: OnFailure
+          shareProcessNamespace: true
           containers:
             - name: {{ .Release.Name }}-cron
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -29,6 +30,10 @@ spec:
               envFrom:
                 - configMapRef:
                     name: {{ .Release.Name }}-config
+              lifecycle:
+                preStop:
+                  exec:
+                    command: ["/bin/sh", "-c", "killall cloud-sql-proxy || killall cloud_sql_proxy || true"]
 
             {{- if .Values.cloudsql.enabled }}
             - name: cloud-sql-proxy
