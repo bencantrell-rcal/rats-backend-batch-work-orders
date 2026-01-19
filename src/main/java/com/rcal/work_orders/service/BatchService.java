@@ -20,15 +20,9 @@ public class BatchService{
     List<String> routerlessWorkOrders = workOrderService
         .getRouterlessWorkOrdersLast6Months();
     for (String workOrderNumber : routerlessWorkOrders){
-      // routerStepService.copyRouterSteps(
-      // workOrderService.getMostRecentPreviousWorkOrder(workOrderNumber),
-      // workOrderNumber);
-
-      if (workOrderNumber.equals("9432-1")){
-        routerStepService.copyRouterSteps(
-            workOrderService.getMostRecentPreviousWorkOrder(workOrderNumber),
-            workOrderNumber);
-      }
+      routerStepService.copyRouterSteps(
+          workOrderService.getMostRecentPreviousWorkOrder(workOrderNumber),
+          workOrderNumber);
     }
   }
 }
