@@ -2,3 +2,8 @@
 # Not exploitable for Java workloads
 # Debian status: will_not_fix
 CVE-2023-45853
+
+# glibc (libc6) CVE in distroless / Debian
+# Integer overflow in memalign; not reachable from Java-only workloads
+# Debian status: no_fix_available (upstream pending)
+CVE-2026-0861
