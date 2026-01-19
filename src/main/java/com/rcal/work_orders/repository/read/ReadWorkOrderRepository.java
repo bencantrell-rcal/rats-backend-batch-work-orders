@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -16,8 +15,36 @@ public interface ReadWorkOrderRepository
     extends
       JpaRepository<WorkOrder, Integer>{
 
+  @Query(value = """
+      SELECT DISTINCT w.wo_number
+      FROM wos w
+      WHERE w.Scheduled_Start > NOW() - INTERVAL 6 MONTH
+        AND NOT EXISTS (
+            SELECT 1
+            FROM t_routers r
+            WHERE r.WO = w.wo_number
+        )
+      """, nativeQuery = true)
+  List<String> findRouterlessWorkOrdersLast6Months();
+
   @Query(value = "SELECT * FROM wos WHERE wo_number = :workOrderNumber", nativeQuery = true)
   WorkOrder findByWorkOrderNumber(
       @Param("workOrderNumber") String workOrderNumber);
+
+  @Query(value = """
+      SELECT wo_number
+      FROM wos
+      WHERE assy = (
+              SELECT assy
+              FROM wos
+              WHERE wo_number = :inputWoNumber
+            )
+        AND Qty_Completed > 0
+        AND wo_number <> :inputWoNumber
+      ORDER BY wo_id DESC
+      LIMIT 1
+      """, nativeQuery = true)
+  String findMostRecentPreviousWorkOrder(
+      @Param("inputWoNumber") String inputWoNumber);
 
 }

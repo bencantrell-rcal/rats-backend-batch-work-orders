@@ -1,8 +1,6 @@
 package com.rcal.work_orders.service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -10,12 +8,27 @@ import org.springframework.stereotype.Service;
 public class BatchService{
 
   private WorkOrderService workOrderService;
+  private RouterStepService routerStepService;
 
-  public BatchService(WorkOrderService workOrderService) {
+  public BatchService(WorkOrderService workOrderService,
+      RouterStepService routerStepService) {
     this.workOrderService = workOrderService;
+    this.routerStepService = routerStepService;
   }
 
   public void normalJob(){
-    System.out.println(workOrderService.findByWorkOrderNumber("9337-1"));
+    List<String> routerlessWorkOrders = workOrderService
+        .getRouterlessWorkOrdersLast6Months();
+    for (String workOrderNumber : routerlessWorkOrders){
+      // routerStepService.copyRouterSteps(
+      // workOrderService.getMostRecentPreviousWorkOrder(workOrderNumber),
+      // workOrderNumber);
+
+      if (workOrderNumber.equals("9432-1")){
+        routerStepService.copyRouterSteps(
+            workOrderService.getMostRecentPreviousWorkOrder(workOrderNumber),
+            workOrderNumber);
+      }
+    }
   }
 }
