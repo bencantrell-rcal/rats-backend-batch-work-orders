@@ -7,3 +7,9 @@ CVE-2023-45853
 # Integer overflow in memalign; not reachable from Java-only workloads
 # Debian status: no_fix_available (upstream pending)
 CVE-2026-0861
+
+# libpng CVEs in Debian base image
+# Not exploitable for Java Spring Boot workloads
+# No PNG parsing, no native linkage
+CVE-2026-22695
+CVE-2026-22801
