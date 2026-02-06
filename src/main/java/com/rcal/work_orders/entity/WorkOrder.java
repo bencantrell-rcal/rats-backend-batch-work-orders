@@ -41,6 +41,9 @@ public class WorkOrder{
   @Column(name = "Scheduled_Start")
   private Date scheduledStart;
 
+  @Column(name = "Type")
+  private Integer type;
+
   @Column(name = "Kit_Line_Percent")
   private Double kitLinePercent;
 }

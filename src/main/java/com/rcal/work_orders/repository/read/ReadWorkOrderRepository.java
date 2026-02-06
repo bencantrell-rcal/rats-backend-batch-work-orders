@@ -41,6 +41,7 @@ public interface ReadWorkOrderRepository
             )
         AND Qty_Completed > 0
         AND wo_number <> :inputWoNumber
+        AND Type = 0
       ORDER BY wo_id DESC
       LIMIT 1
       """, nativeQuery = true)
