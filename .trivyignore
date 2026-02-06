@@ -13,3 +13,4 @@ CVE-2026-0861
 # No PNG parsing, no native linkage
 CVE-2026-22695
 CVE-2026-22801
+CVE-2026-24515
